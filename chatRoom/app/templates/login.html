@@ -1,0 +1,33 @@
+{% extends 'layout.html'%}
+{% block title %}Page de connexion au chatRoom{% endblock %}
+{% block content %}
+<br><br><br><br>
+<div class="row">
+	<div class="col-md-offset-4 col-md-4">
+		
+		<div class="panel panel-primary">
+		  <div class="panel-heading">
+		    <h3 class="panel-title text-center">Logger vous SVP</h3>
+		  </div>
+		  <div class="panel-body">
+		    <form id="form1" method="post">
+		    	<div class="form-group">
+		    		<label for="pseudo" class="control-label text-center">Pseudo</label>
+            		<input type="text" class="form-control" id="pseudo" name="pseudo" placeholder="pseudo" required="required">
+		    	</div>
+		    	{% with messages = get_flashed_messages() %}
+		    		{% if messages %}
+		    			{% for m in messages %}
+			    			<span class="text text-danger">{{ m }}</span>
+						{% endfor %}
+					{% endif %}
+		    	{% endwith %}
+		    </form>
+		  </div>
+		  <div class="panel-footer">
+		  	<button type="submit" form="form1" class="btn btn-success">Se connecter</button>
+		  </div>
+		</div>
+	</div>
+</div>
+{% endblock %}

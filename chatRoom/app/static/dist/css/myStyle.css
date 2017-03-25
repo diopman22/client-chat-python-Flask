@@ -1,0 +1,11 @@
+#mainFont {
+	background-color: lightblue;
+}
+
+.chatroom{
+	background-color: lightblue;
+}
+
+ul.messages{
+	list-style-type: none;
+}

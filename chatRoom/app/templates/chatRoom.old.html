@@ -1,0 +1,237 @@
+{% extends 'layout.html'%}
+{% block title %}chatRoom{% endblock %}
+{% block content %}
+
+<br><br><br>
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<h3 class="panel-title text-center">ChatRoom</h3>
+	</div>
+	<div class="panel-body">
+		<div class="row">
+			<div class="col-md-4">
+				<div class="row">
+					<button class="glyphicon glyphicon-plus pull-left btn btn-success" data-toggle="modal" data-target="#newSalon">Salon</button>
+					<a href="{{url_for('logout')}}" class="btn btn-primary pull-right">Se d&eacute;connecter</a>
+					<div class="modal fade" id="newSalon" tabindex="-1" role="dialog" aria-labelledby="newChatRoomLabel">
+					  <div class="modal-dialog" role="document">
+					    <div class="modal-content">
+					      <div class="modal-header">
+					        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					        <h4 class="modal-title">Nouveau salon</h4>
+					      </div>
+
+					      <div class="modal-body">
+					      	<form id="form2">
+						        <div class="form-group">
+						    		<label for="salon" class="control-label text-center">Salon</label>
+				            		<input type="text" class="form-control" id="salon" name="salon" placeholder="salon" required="required">
+						    	</div>
+					    	</form>
+					      </div>
+					      <div class="modal-footer">
+					        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					        <button id="btnSalon" class="btn btn-primary" data-dismiss="modal">Add</button><!-- à revoir-->
+					      </div>
+					    </div><!-- /.modal-content -->
+					  </div><!-- /.modal-dialog -->
+					</div><!-- /.modal -->
+				</div><br>
+				<div class="row">
+					<div class="list-group" id="listSalons">
+						<a href="#" class="list-group-item index">
+					    	Cras justo odio
+						</a>
+						<a href="#" class="list-group-item index">
+							Dapibus ac facilisis in
+						</a>
+						<a href="#" class="list-group-item index">
+							Morbi leo risus
+						</a>
+						<a href="#" class="list-group-item index">
+							Porta ac consectetur ac
+						</a>
+						<a href="#" class="list-group-item index">
+							Vestibulum at eros
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-8">
+				<div class="row">
+					<div class="col-md-offset-2">
+					<div class="list-group" id="listMessages">
+				   		<a class="list-group-item">msg1</a>
+				   		<a class="list-group-item list-group-item-success text-right">msg2</a>
+				   		<a class="list-group-item">msg3</a>
+				   		<a class="list-group-item">msg4</a>
+				   		<a class="list-group-item">msg5</a>
+					</div>
+					</div>
+				</div>
+				<div class="row">
+						<div class="col-md-offset-2">
+							<form id="form3">
+								<div class="form-group">
+			            			<input type="text" class="form-control" disabled="disabled" id="message" name="message" placeholder="message" required="required">		
+					    		</div>	
+				    		</form>
+				    		<button class="btn btn-info glyphicon glyphicon-send pull-right" disabled="disabled" name="btnSend" id="btnSend" title="Envoyer"></button>
+			    		</div>	
+				</div>
+			</div>
+			
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block javascript %}
+{{super()}}
+<script type="text/javascript">
+	$(document).ready(function () {
+
+		//Empêcher l'écriture de message  si un salon est sélectionné
+		/*var salonStart = $('.glyphicon-eye-open').val();
+		console.log(salonStart);*/
+
+
+		//entrer dans un salon
+		$(document).on('click', '.index', function () {
+			$('#message').removeAttr('disabled');
+			$('#btnSend').removeAttr('disabled');
+			$(".index").removeClass('active glyphicon glyphicon-eye-open');
+			$(this).addClass('active glyphicon glyphicon-eye-open');
+
+			var salon = $(".glyphicon-eye-open");//variable symbolisant le salon dans la partie JS
+            //setInterval(function(){},1500);
+            $.ajax({
+            	type: 'GET',
+            	url: '/chatroom/rcvmsg',
+            	timeout: 10000,
+            	data: 'salon='+$(".glyphicon-eye-open").val(),
+
+            	beforeSend: function () {
+            		console.log("Requête en cours");
+            	},
+
+            	success: function (data) {
+            		console.log('ok chui la');
+            		var messages = $.parseJSON(data);
+            		console.log(messages);
+            	},
+
+            	error: function () {
+            		console.log("Erreur de la requête");
+            	}
+            })
+		});
+
+		//Envoi de message dans un salon de discussion
+		$('#btnSend').click(function() {
+			var message_v = $('#message').val();//message à envoyer dans une salon
+			var salon_v = $('glyphicon-eye-open').val();
+			$.ajax({
+				url: '/chatroom/sendmsg',
+				type: 'GET',
+				timeout: 10000,
+				data: $('#form3').serialize()+'&salon='+$(".glyphicon-eye-open").val(),
+
+				beforeSend: function () {
+            		console.log("Requête en cours");
+            	},
+
+            	success: function (data) {
+            		$('#message').val("");
+            		var resp = $.parseJSON(data);
+            		console.log(resp);
+            		$('#listMessages').append('<a class="list-group-item list-group-item-success text-right">'+resp.response+'</a>')
+            	},
+
+            	error: function () {
+            		console.log("Erreur de la requête");
+            	}
+			});
+			
+		});
+
+		//Création d'un nouveau salon de discussion
+		$('#btnSalon').click(function() {
+			$.ajax({
+				url: '/chatroom/addroom',
+				type: 'GET',
+				timeout: 10000,
+				data: $('#form2').serialize(),
+
+				beforeSend: function () {
+					$('#salon').val("");
+            		console.log("Requête en cours");
+            	},
+
+            	success: function (data) {
+            		var resp = $.parseJSON(data);
+            		console.log(resp);
+
+            		$('#listSalons').append('<a href="#" class="list-group-item index">\n'
+						+resp.response+'\n\
+					</a>');
+            	},
+
+            	error: function () {
+            		console.log("Erreur de la requête");
+            	}
+			});
+			
+		});
+
+		/*
+		//Fonction qui gère la réception des messages chaque seconde
+		setInterval(function () {
+			$.ajax({
+				url: '/chatroom/rcvmsg',
+				type: 'GET',
+				timeout: 10000,
+				data: salon='+$(".glyphicon-eye-open").val(),
+
+				beforeSend: function () {
+            		console.log("Requête en cours");
+            	},
+
+            	success: function (data) {
+            		var resp = $.parseJSON(data);
+            		console.log(resp);
+            	},
+
+            	error: function () {
+            		console.log("Erreur de la requête");
+            	}
+			});
+		}, 1000);
+
+
+		//Fonction qui gère la réception des salons de discussion (éventuellement ceux nouvellement créés)
+		setInterval(function () {
+			$.ajax({
+				url: '/chatroom/rcvroom',
+				type: 'GET',
+				timeout: 10000,
+
+				beforeSend: function () {
+            		console.log("Requête en cours");
+            	},
+
+            	success: function (data) {
+            		var resp = $.parseJSON(data);
+            		console.log(resp);
+            	},
+
+            	error: function () {
+            		console.log("Erreur de la requête");
+            	}
+			});
+		}, 2000);
+		*/
+
+	});
+</script>
+{% endblock %}
